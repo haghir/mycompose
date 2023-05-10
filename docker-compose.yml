@@ -1,0 +1,56 @@
+version: "3"
+services:
+  mysql:
+    image: "mysql:latest"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+    - type: bind
+      source: ./storage/mysql/init
+      target: /docker-entrypoint-initdb.d
+    - type: bind
+      source: ./storage/mysql/data
+      target: /var/lib/mysql
+  redis:
+    image: "redis:latest"
+  minauth:
+    build: "min-auth"
+    environment:
+      RUST_LOG: info
+      REDIS_URI: "redis://redis/0"
+      REDIS_LIFETIME: 3600
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USERNAME: minauth
+      MYSQL_PASSWORD: minauth
+      MYSQL_DBNAME: minauth
+      PASSWORD_SECRET: "secret:"
+  wordpress:
+    image: "wordpress:latest"
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+    - type: bind
+      source: ./storage/wordpress/html
+      target: /var/www/html
+  redmine:
+    image: "redmine:latest"
+    environment:
+      REDMINE_DB_MYSQL: mysql
+      REDMINE_DB_PORT: 3306
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_DB_PASSWORD: redmine
+      REDMINE_DB_DATABASE: redmine
+    volumes:
+    - type: bind
+      source: ./storage/redmine/files
+      target: /usr/src/redmine/files
+  nginx:
+    build: nginx
+    ports:
+    - "80:80"
+    - "443:443"
+    - "30022:30022"
