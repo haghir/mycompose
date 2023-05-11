@@ -11,8 +11,10 @@ services:
     - type: bind
       source: ./storage/mysql/data
       target: /var/lib/mysql
+    restart: always
   redis:
     image: "redis:latest"
+    restart: always
   minauth:
     build: "min-auth"
     environment:
@@ -30,6 +32,7 @@ services:
         condition: service_started
       redis:
         condition: service_started
+    restart: always
   wordpress:
     image: "wordpress:latest"
     environment:
@@ -44,6 +47,7 @@ services:
     depends_on:
       mysql:
         condition: service_started
+    restart: always
   redmine:
     image: "redmine:latest"
     environment:
@@ -59,6 +63,7 @@ services:
     depends_on:
       mysql:
         condition: service_started
+    restart: always
   nginx:
     build: nginx
     ports:
@@ -72,3 +77,4 @@ services:
         condition: service_started
       wordpress:
         condition: service_started
+    restart: always
