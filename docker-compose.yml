@@ -1,15 +1,15 @@
 version: "3"
 services:
   mysql:
-    image: "mysql:latest"
+    build: "mysql"
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
     volumes:
-    - type: bind
-      source: ./storage/mysql/init
+    - type: volume
+      source: mysql-init
       target: /docker-entrypoint-initdb.d
-    - type: bind
-      source: ./storage/mysql/data
+    - type: volume
+      source: mysql-data
       target: /var/lib/mysql
     restart: always
   redis:
@@ -41,8 +41,8 @@ services:
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DB_NAME: wordpress
     volumes:
-    - type: bind
-      source: ./storage/wordpress/html
+    - type: volume
+      source: wordpress-html
       target: /var/www/html
     depends_on:
       mysql:
@@ -57,8 +57,8 @@ services:
       REDMINE_DB_PASSWORD: redmine
       REDMINE_DB_DATABASE: redmine
     volumes:
-    - type: bind
-      source: ./storage/redmine/files
+    - type: volume
+      source: redmine-files
       target: /usr/src/redmine/files
     depends_on:
       mysql:
@@ -78,3 +78,8 @@ services:
       wordpress:
         condition: service_started
     restart: always
+volumes:
+  mysql-init:
+  mysql-data:
+  wordpress-html:
+  redmine-files:
