@@ -27,9 +27,9 @@ services:
       PASSWORD_SECRET: "secret:"
     depends_on:
       mysql:
-        condition: service_completed_successfully
+        condition: service_started
       redis:
-        condition: service_completed_successfully
+        condition: service_started
   wordpress:
     image: "wordpress:latest"
     environment:
@@ -43,7 +43,7 @@ services:
       target: /var/www/html
     depends_on:
       mysql:
-        condition: service_completed_successfully
+        condition: service_started
   redmine:
     image: "redmine:latest"
     environment:
@@ -58,7 +58,7 @@ services:
       target: /usr/src/redmine/files
     depends_on:
       mysql:
-        condition: service_completed_successfully
+        condition: service_started
   nginx:
     build: nginx
     ports:
@@ -67,8 +67,8 @@ services:
     - "30022:30022"
     depends_on:
       minauth:
-        condition: service_completed_successfully
+        condition: service_started
       redmine:
-        condition: service_completed_successfully
+        condition: service_started
       wordpress:
-        condition: service_completed_successfully
+        condition: service_started
