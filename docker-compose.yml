@@ -26,8 +26,10 @@ services:
       MYSQL_DBNAME: minauth
       PASSWORD_SECRET: "secret:"
     depends_on:
-    - mysql
-    - redis
+      mysql:
+        condition: service_completed_successfully
+      redis:
+        condition: service_completed_successfully
   wordpress:
     image: "wordpress:latest"
     environment:
@@ -40,7 +42,8 @@ services:
       source: ./storage/wordpress/html
       target: /var/www/html
     depends_on:
-    - mysql
+      mysql:
+        condition: service_completed_successfully
   redmine:
     image: "redmine:latest"
     environment:
@@ -54,7 +57,8 @@ services:
       source: ./storage/redmine/files
       target: /usr/src/redmine/files
     depends_on:
-    - mysql
+      mysql:
+        condition: service_completed_successfully
   nginx:
     build: nginx
     ports:
@@ -62,6 +66,9 @@ services:
     - "443:443"
     - "30022:30022"
     depends_on:
-    - minauth
-    - redmine
-    - wordpress
+      minauth:
+        condition: service_completed_successfully
+      redmine:
+        condition: service_completed_successfully
+      wordpress:
+        condition: service_completed_successfully
