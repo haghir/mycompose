@@ -1,22 +1,21 @@
-version: "3"
+version: "3.2"
 services:
   mysql:
-    build: "mysql"
+    image: "mysql:latest"
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
     volumes:
     - type: volume
-      source: mysql-init
-      target: /docker-entrypoint-initdb.d
-    - type: volume
       source: mysql-data
       target: /var/lib/mysql
     restart: always
+
   redis:
     image: "redis:latest"
     restart: always
+
   minauth:
-    build: "min-auth"
+    image: "min-auth:latest"
     environment:
       RUST_LOG: info
       REDIS_URI: "redis://redis/0"
@@ -33,6 +32,7 @@ services:
       redis:
         condition: service_started
     restart: always
+
   wordpress:
     image: "wordpress:latest"
     environment:
@@ -48,6 +48,7 @@ services:
       mysql:
         condition: service_started
     restart: always
+
   redmine:
     image: "redmine:latest"
     environment:
@@ -64,12 +65,13 @@ services:
       mysql:
         condition: service_started
     restart: always
+
   nginx:
     build: nginx
     ports:
     - "80:80"
     - "443:443"
-    - "30022:30022"
+    #- "30022:30022"
     depends_on:
       minauth:
         condition: service_started
@@ -78,8 +80,13 @@ services:
       wordpress:
         condition: service_started
     restart: always
+
 volumes:
   mysql-init:
+    external: true
   mysql-data:
+    external: true
   wordpress-html:
+    external: true
   redmine-files:
+    external: true

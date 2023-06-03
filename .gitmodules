@@ -1,3 +1,0 @@
-[submodule "min-auth"]
-	path = min-auth
-	url = https://github.com/haghir/min-auth.git
