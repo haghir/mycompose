@@ -1,5 +1,19 @@
 version: "3.2"
 services:
+  backup:
+    build: "backup"
+    volumes:
+    - type: volume
+      source: backup-archives
+      target: /var/lib/backup/archive
+    - type: volume
+      source: wordpress-html
+      target: /var/lib/backup/src/wordpress
+    - type: volume
+      source: redmine-files
+      target: /var/lib/backup/src/redmime
+    restart: always
+
   mysql:
     image: "mysql:latest"
     environment:
@@ -82,7 +96,7 @@ services:
     restart: always
 
 volumes:
-  mysql-init:
+  backup-archives:
     external: true
   mysql-data:
     external: true
