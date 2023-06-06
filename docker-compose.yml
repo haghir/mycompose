@@ -12,12 +12,21 @@ services:
     - type: volume
       source: redmine-files
       target: /var/lib/backup/src/redmime
+    secrets:
+    - mimauth-db-username
+    - mimauth-db-password
+    - wordpress-db-username
+    - wordpress-db-password
+    - redmine-db-username
+    - redmine-db-password
     restart: always
 
   mysql:
     image: "mysql:latest"
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD_FILE: "/run/secrets/mysql-root-password"
+    secrets:
+    - mysql-root-password
     volumes:
     - type: volume
       source: mysql-data
@@ -36,10 +45,13 @@ services:
       REDIS_LIFETIME: 3600
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
-      MYSQL_USERNAME: minauth
-      MYSQL_PASSWORD: minauth
+      MYSQL_USERNAME_FILE: "/run/secrets/minauth-db-username"
+      MYSQL_PASSWORD_FILE: "/run/secrets/minauth-db-password"
       MYSQL_DBNAME: minauth
       PASSWORD_SECRET: "secret:"
+    secrets:
+    - minauth-db-username
+    - minauth-db-password
     depends_on:
       mysql:
         condition: service_started
@@ -51,9 +63,12 @@ services:
     image: "wordpress:latest"
     environment:
       WORDPRESS_DB_HOST: mysql
-      WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_USER_FILE: "/run/secrets/wordpress-db-username"
+      WORDPRESS_DB_PASSWORD_FILE: "/run/secrets/wordpress-db-password"
       WORDPRESS_DB_NAME: wordpress
+    secrets:
+    - wordpress-db-username
+    - wordpress-db-password
     volumes:
     - type: volume
       source: wordpress-html
@@ -68,9 +83,12 @@ services:
     environment:
       REDMINE_DB_MYSQL: mysql
       REDMINE_DB_PORT: 3306
-      REDMINE_DB_USERNAME: redmine
-      REDMINE_DB_PASSWORD: redmine
+      REDMINE_DB_USERNAME_FILE: "/run/secrets/redmine-db-username"
+      REDMINE_DB_PASSWORD_FILE: "/run/secrets/redmine-db-password"
       REDMINE_DB_DATABASE: redmine
+    secrets:
+    - redmine-db-username
+    - redmine-db-password
     volumes:
     - type: volume
       source: redmine-files
@@ -94,6 +112,22 @@ services:
       wordpress:
         condition: service_started
     restart: always
+
+secrets:
+  mysql-root-password:
+    external: true
+  mimauth-db-username:
+    external: true
+  mimauth-db-password:
+    external: true
+  wordpress-db-username:
+    external: true
+  wordpress-db-password:
+    external: true
+  redmine-db-username:
+    external: true
+  redmine-db-password:
+    external: true
 
 volumes:
   backup-archives:
