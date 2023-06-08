@@ -1,0 +1,39 @@
+version: "3.2"
+services:
+  mysql:
+    image: "mysql:latest"
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: "/run/secrets/mysql-root-password"
+    secrets:
+    - mysql-root-password
+    - mimauth-db-username
+    - mimauth-db-password
+    - wordpress-db-username
+    - wordpress-db-password
+    - redmine-db-username
+    - redmine-db-password
+    volumes:
+    - type: volume
+      source: mysql-data
+      target: /var/lib/mysql
+    restart: always
+
+secrets:
+  mysql-root-password:
+    external: true
+  mimauth-db-username:
+    external: true
+  mimauth-db-password:
+    external: true
+  wordpress-db-username:
+    external: true
+  wordpress-db-password:
+    external: true
+  redmine-db-username:
+    external: true
+  redmine-db-password:
+    external: true
+
+volumes:
+  mysql-data:
+    external: true
