@@ -1,5 +1,5 @@
 FROM alpine:latest
-RUN apk --update-cache --no-cache rsync mysql-client
+RUN apk add --update-cache --no-cache rsync mysql-client
 COPY backup /usr/local/bin
 RUN chmod +x /usr/local/bin/backup
 RUN mkdir -p /var/lib/backup/archives /var/lib/backup/src
