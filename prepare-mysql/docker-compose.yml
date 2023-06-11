@@ -1,7 +1,7 @@
 version: "3.2"
 services:
   mysql:
-    image: prepare-mysql
+    image: "localhost/prepare-mysql:latest"
     environment:
       MYSQL_ROOT_PASSWORD_FILE: "/run/secrets/mysql-root-password"
     secrets:

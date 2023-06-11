@@ -1,7 +1,7 @@
 version: "3.2"
 services:
   backup:
-    image: "backup:latest"
+    image: "localhost/backup:latest"
     volumes:
     - type: volume
       source: backup-archives
@@ -36,7 +36,7 @@ services:
     restart: always
 
   minauth:
-    image: "min-auth:latest"
+    image: "localhost/min-auth:latest"
     environment:
       RUST_LOG: info
       REDIS_URI: "redis://redis/0"
@@ -90,11 +90,15 @@ services:
     - mysql
 
   nginx:
-    image: "nginx:latest"
+    image: "localhost/nginx:latest"
     ports:
     - "80:80"
     - "443:443"
     #- "30022:30022"
+    volumes:
+    - type: volume
+      source: nginx-config
+      target: /etc/nginx/conf.d
     depends_on:
     - minauth
     - redmine
@@ -124,4 +128,6 @@ volumes:
   wordpress-html:
     external: true
   redmine-files:
+    external: true
+  nginx-config:
     external: true
