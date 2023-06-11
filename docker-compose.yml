@@ -1,7 +1,7 @@
 version: "3.2"
 services:
   backup:
-    build: "backup"
+    image: "backup:latest"
     volumes:
     - type: volume
       source: backup-archives
@@ -11,15 +11,14 @@ services:
       target: /var/lib/backup/src/wordpress
     - type: volume
       source: redmine-files
-      target: /var/lib/backup/src/redmime
+      target: /var/lib/backup/src/redmine
     secrets:
-    - mimauth-db-username
-    - mimauth-db-password
+    - minauth-db-username
+    - minauth-db-password
     - wordpress-db-username
     - wordpress-db-password
     - redmine-db-username
     - redmine-db-password
-    restart: always
 
   mysql:
     image: "mysql:latest"
@@ -31,7 +30,6 @@ services:
     - type: volume
       source: mysql-data
       target: /var/lib/mysql
-    restart: always
 
   redis:
     image: "redis:latest"
@@ -53,11 +51,8 @@ services:
     - minauth-db-username
     - minauth-db-password
     depends_on:
-      mysql:
-        condition: service_started
-      redis:
-        condition: service_started
-    restart: always
+    - mysql
+    - redis
 
   wordpress:
     image: "wordpress:latest"
@@ -74,9 +69,7 @@ services:
       source: wordpress-html
       target: /var/www/html
     depends_on:
-      mysql:
-        condition: service_started
-    restart: always
+    - mysql
 
   redmine:
     image: "redmine:latest"
@@ -94,31 +87,25 @@ services:
       source: redmine-files
       target: /usr/src/redmine/files
     depends_on:
-      mysql:
-        condition: service_started
-    restart: always
+    - mysql
 
   nginx:
-    build: nginx
+    image: "nginx:latest"
     ports:
     - "80:80"
     - "443:443"
     #- "30022:30022"
     depends_on:
-      minauth:
-        condition: service_started
-      redmine:
-        condition: service_started
-      wordpress:
-        condition: service_started
-    restart: always
+    - minauth
+    - redmine
+    - wordpress
 
 secrets:
   mysql-root-password:
     external: true
-  mimauth-db-username:
+  minauth-db-username:
     external: true
-  mimauth-db-password:
+  minauth-db-password:
     external: true
   wordpress-db-username:
     external: true

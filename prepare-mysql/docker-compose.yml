@@ -1,13 +1,13 @@
 version: "3.2"
 services:
   mysql:
-    build: "mysql"
+    image: prepare-mysql
     environment:
       MYSQL_ROOT_PASSWORD_FILE: "/run/secrets/mysql-root-password"
     secrets:
     - mysql-root-password
-    - mimauth-db-username
-    - mimauth-db-password
+    - minauth-db-username
+    - minauth-db-password
     - wordpress-db-username
     - wordpress-db-password
     - redmine-db-username
@@ -16,14 +16,13 @@ services:
     - type: volume
       source: mysql-data
       target: /var/lib/mysql
-    restart: always
 
 secrets:
   mysql-root-password:
     external: true
-  mimauth-db-username:
+  minauth-db-username:
     external: true
-  mimauth-db-password:
+  minauth-db-password:
     external: true
   wordpress-db-username:
     external: true
