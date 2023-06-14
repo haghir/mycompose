@@ -7,32 +7,48 @@ SRCDIR="${BKHOME}/src"
 DSTDIR="${BKHOME}/dst"
 ARCHDIR="${BKHOME}/archives"
 
+DBPASS="$(cat /var/lib/secrets/mysql/root-password.txt)"
+
+# Delete the last backup.
 if ! rm -rf "${DSTDIR}" ; then
-    echo "Failed to delete the previous backup." 1>&2
-    exit 1
+	echo "Failed to delete the previous backup." 1>&2
+	exit 1
 fi
 
+# Make a directory to create an archive.
 if ! mkdir -p "${DSTDIR}" ; then
-    echo "Failed to create the backup directory." 1>&2
-    exit 2
+	echo "Failed to create the backup directory." 1>&2
+	exit 2
 fi
 
+# Delete the last archive.
 if ! rm -rf "${ARCHDIR}/*.tar.gz" ; then
-    echo "Failed to delete the previous archive." 1>&2
-    exit 1
+	echo "Failed to delete the previous archive." 1>&2
+	exit 1
 fi
 
+# Copy files to the directory that will be archived.
 {
-    echo redmine
-    echo wordpress
+	echo redmine
+	echo wordpress
 } | while read SVC ; do
-    if ! rsync -a "${SRCDIR}/${SVC}" "${DSTDIR}/${SVC}" ; then
-        echo "Failed to sync \"${SRCDIR}/${SVC}.\"" 1>&2
-        exit 3
-    fi
+	if ! rsync -a "${SRCDIR}/${SVC}" "${DSTDIR}/${SVC}" ; then
+		echo "Failed to sync \"${SRCDIR}/${SVC}.\"" 1>&2
+		exit 3
+	fi
 done
 
+# Dump the databases.
+{
+	echo minauth
+	echo wordpress
+	echo redmine
+} | while read DBNAME ; do
+	mysqldump -h"mysql" -u"root" -p"${DBPASS}" --hex-blob "${DBNAME}" > "${DSTDIR}/${DBNAME}.sql"
+done
+
+# Create an archive file.
 if ! tar -czf "${ARCHDIR}/${TS}.tar.gz" -C "${DSTDIR}" . ; then
-    echo "Failed to archive the target files."
-    exit 4
+	echo "Failed to archive the target files."
+	exit 4
 fi

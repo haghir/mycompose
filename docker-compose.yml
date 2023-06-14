@@ -1,7 +1,7 @@
 version: "3.2"
 services:
   mysql:
-    build: "mysql"
+    image: "mysql:latest"
     environment:
       MYSQL_ROOT_PASSWORD_FILE: "/var/lib/secrets/root-password.txt"
     volumes:
@@ -61,7 +61,7 @@ services:
     restart: always
 
   wordpress:
-    build: "wordpress"
+    image: "wordpress:latest"
     environment:
       WORDPRESS_DB_HOST: mysql
       WORDPRESS_DB_USER_FILE: "/var/lib/secrets/db-username.txt"
@@ -79,7 +79,7 @@ services:
     restart: always
 
   redmine:
-    build: "redmine"
+    image: "redmine:latest"
     environment:
       REDMINE_DB_MYSQL: mysql
       REDMINE_DB_PORT: 3306
