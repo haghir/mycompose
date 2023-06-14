@@ -15,12 +15,17 @@ mkdir -p nginx/config
 mkdir -p nginx/secrets
 
 echo -n "$(pwgen -s 29 1)" > mysql/secrets/root-password.txt
-echo -n "minauth"          > min-auth/secrets/db-username.txt
+echo -n "minauth" > min-auth/secrets/db-username.txt
 echo -n "$(pwgen -s 29 1)" > min-auth/secrets/db-password.txt
-echo -n "wordpress"        > wordpress/secrets/db-username.txt
+echo -n "wordpress" > wordpress/secrets/db-username.txt
 echo -n "$(pwgen -s 29 1)" > wordpress/secrets/db-password.txt
-echo -n "redmine"          > redmine/secrets/db-username.txt
+echo -n "redmine" > redmine/secrets/db-username.txt
 echo -n "$(pwgen -s 29 1)" > redmine/secrets/db-password.txt
+
+find . -type d -name secrets | while read DPATH ; do
+	chmod 700 "${DPATH}"
+	find "${DPATH}" -type f -name "*.txt" -execdir chmod 400 "{}" \;
+done
 
 # initialize min-auth
 cat <<EOF > mysql/init/min-auth.sql
@@ -48,6 +53,3 @@ CREATE USER $(cat redmine/secrets/db-username.txt) IDENTIFIED BY '$(cat redmine/
 CREATE DATABASE redmine CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
 GRANT ALL ON redmine.* TO $(cat redmine/secrets/db-username.txt);
 EOF
-
-find . -type d -name secrets -exec chmod 700 "{}" \;
-find . -type d -name secrets -execdir chmod 400 *.txt \;
