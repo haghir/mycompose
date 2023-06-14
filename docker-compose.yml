@@ -4,9 +4,10 @@ services:
     build: "mysql"
     environment:
       MYSQL_ROOT_PASSWORD_FILE: "/var/lib/secrets/root-password.txt"
-    secrets:
-    - mysql-root-password
     volumes:
+    - type: bind
+      source: ./storage/mysql/init
+      target: /docker-entrypoint-initdb.d
     - type: bind
       source: ./storage/mysql/data
       target: /var/lib/mysql

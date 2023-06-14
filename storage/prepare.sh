@@ -37,14 +37,14 @@ EOF
 
 # initialize wordpress
 cat <<EOF > mysql/init/wordpress.sql
-CREATE USER $(cat wordpress/srcrets/db-username.txt) IDENTIFIED BY '$(cat wordpress/secrets/db-password.txt)';
+CREATE USER $(cat wordpress/secrets/db-username.txt) IDENTIFIED BY '$(cat wordpress/secrets/db-password.txt)';
 CREATE DATABASE wordpress CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
-GRANT ALL ON wordpress.* TO $(cat wordpress/srcrets/db-username.txt);
+GRANT ALL ON wordpress.* TO $(cat wordpress/secrets/db-username.txt);
 EOF
 
 # initialize redmine
 cat <<EOF > mysql/init/redmine.sql
-CREATE USER $(cat redmine/secrets/db-username.txt) IDENTIFIED BY '$(cat redmine/secrets/db-password)';
+CREATE USER $(cat redmine/secrets/db-username.txt) IDENTIFIED BY '$(cat redmine/secrets/db-password.txt)';
 CREATE DATABASE redmine CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
 GRANT ALL ON redmine.* TO $(cat redmine/secrets/db-username.txt);
 EOF
