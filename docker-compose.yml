@@ -1,133 +1,116 @@
 version: "3.2"
 services:
-  backup:
-    image: "localhost/backup:latest"
-    volumes:
-    - type: volume
-      source: backup-archives
-      target: /var/lib/backup/archive
-    - type: volume
-      source: wordpress-html
-      target: /var/lib/backup/src/wordpress
-    - type: volume
-      source: redmine-files
-      target: /var/lib/backup/src/redmine
-    secrets:
-    - minauth-db-username
-    - minauth-db-password
-    - wordpress-db-username
-    - wordpress-db-password
-    - redmine-db-username
-    - redmine-db-password
-
   mysql:
-    image: "mysql:latest"
+    build: "mysql"
     environment:
-      MYSQL_ROOT_PASSWORD_FILE: "/run/secrets/mysql-root-password"
+      MYSQL_ROOT_PASSWORD_FILE: "/var/lib/secrets/root-password.txt"
     secrets:
     - mysql-root-password
     volumes:
-    - type: volume
-      source: mysql-data
+    - type: bind
+      source: ./storage/mysql/data
       target: /var/lib/mysql
+    - type: bind
+      source: ./storage/mysql/secrets
+      target: /var/lib/secrets
+    restart: always
 
   redis:
     image: "redis:latest"
     restart: always
 
+  backup:
+    build: "backup"
+    volumes:
+    - type: bind
+      source: ./storage/backup/archive
+      target: /var/lib/backup/archive
+    - type: bind
+      source: ./storage/backup/wordpress
+      target: /var/lib/backup/src/wordpress
+    - type: bind
+      source: ./storage/backup/redmine
+      target: /var/lib/backup/src/redmine
+    - type: bind
+      source: ./storage/mysql/secrets
+      target: /var/lib/secrets/mysql
+    depends_on:
+    - mysql
+    restart: always
+
   minauth:
-    image: "localhost/min-auth:latest"
+    build: "min-auth"
     environment:
       RUST_LOG: info
       REDIS_URI: "redis://redis/0"
       REDIS_LIFETIME: 3600
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
-      MYSQL_USERNAME_FILE: "/run/secrets/minauth-db-username"
-      MYSQL_PASSWORD_FILE: "/run/secrets/minauth-db-password"
+      MYSQL_USERNAME_FILE: "/var/lib/secrets/db-username.txt"
+      MYSQL_PASSWORD_FILE: "/var/lib/secrets/db-password.txt"
       MYSQL_DBNAME: minauth
       PASSWORD_SECRET: "secret:"
-    secrets:
-    - minauth-db-username
-    - minauth-db-password
+    volumes:
+    - type: bind
+      source: ./storage/min-auth/secrets
+      target: /var/lib/secrets
     depends_on:
     - mysql
     - redis
+    restart: always
 
   wordpress:
-    image: "wordpress:latest"
+    build: "wordpress"
     environment:
       WORDPRESS_DB_HOST: mysql
-      WORDPRESS_DB_USER_FILE: "/run/secrets/wordpress-db-username"
-      WORDPRESS_DB_PASSWORD_FILE: "/run/secrets/wordpress-db-password"
+      WORDPRESS_DB_USER_FILE: "/var/lib/secrets/db-username.txt"
+      WORDPRESS_DB_PASSWORD_FILE: "/var/lib/secrets/db-password.txt"
       WORDPRESS_DB_NAME: wordpress
-    secrets:
-    - wordpress-db-username
-    - wordpress-db-password
     volumes:
-    - type: volume
-      source: wordpress-html
+    - type: bind
+      source: ./storage/wordpress/html
       target: /var/www/html
+    - type: bind
+      source: ./storage/wordpress/secrets
+      target: /var/lib/secrets
     depends_on:
     - mysql
+    restart: always
 
   redmine:
-    image: "redmine:latest"
+    build: "redmine"
     environment:
       REDMINE_DB_MYSQL: mysql
       REDMINE_DB_PORT: 3306
-      REDMINE_DB_USERNAME_FILE: "/run/secrets/redmine-db-username"
-      REDMINE_DB_PASSWORD_FILE: "/run/secrets/redmine-db-password"
+      REDMINE_DB_USERNAME_FILE: "/var/lib/secrets/db-username.txt"
+      REDMINE_DB_PASSWORD_FILE: "/var/lib/secrets/db-password.txt"
       REDMINE_DB_DATABASE: redmine
-    secrets:
-    - redmine-db-username
-    - redmine-db-password
     volumes:
-    - type: volume
-      source: redmine-files
+    - type: bind
+      source: ./storage/redmine/files
       target: /usr/src/redmine/files
+    - type: bind
+      source: ./storage/redmine/secrets
+      target: /var/lib/secrets
     depends_on:
     - mysql
+    restart: always
 
   nginx:
-    image: "localhost/nginx:latest"
+    build: "nginx"
     ports:
     - "80:80"
     - "443:443"
     #- "30022:30022"
     volumes:
-    - type: volume
-      source: nginx-config
+    - type: bind
+      source: ./storage/nginx/config
       target: /etc/nginx/conf.d
+    - type: bind
+      source: ./storage/nginx/secrets
+      target: /var/lib/secrets
     depends_on:
     - minauth
     - redmine
     - wordpress
-
-secrets:
-  mysql-root-password:
-    external: true
-  minauth-db-username:
-    external: true
-  minauth-db-password:
-    external: true
-  wordpress-db-username:
-    external: true
-  wordpress-db-password:
-    external: true
-  redmine-db-username:
-    external: true
-  redmine-db-password:
-    external: true
-
-volumes:
-  backup-archives:
-    external: true
-  mysql-data:
-    external: true
-  wordpress-html:
-    external: true
-  redmine-files:
-    external: true
-  nginx-config:
-    external: true
+    restart: always
