@@ -26,7 +26,7 @@ echo -n "$(pwgen -s 29 1)" > redmine/secrets/db-password.txt
 cat <<EOF > mysql/init/min-auth.sql
 CREATE USER $(cat min-auth/secrets/db-username.txt) IDENTIFIED BY '$(cat min-auth/secrets/db-password.txt)';
 CREATE DATABASE minauth CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
-GRANT ALL ON minauth.* TO ${USERNAME};
+GRANT ALL ON minauth.* TO $(cat min-auth/secrets/db-username.txt);
 USE minauth;
 CREATE TABLE credentials (
     id     VARCHAR(191) NOT NULL PRIMARY KEY
@@ -39,14 +39,14 @@ EOF
 cat <<EOF > mysql/init/wordpress.sql
 CREATE USER $(cat wordpress/srcrets/db-username.txt) IDENTIFIED BY '$(cat wordpress/secrets/db-password.txt)';
 CREATE DATABASE wordpress CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
-GRANT ALL ON wordpress.* TO ${USERNAME};
+GRANT ALL ON wordpress.* TO $(cat wordpress/srcrets/db-username.txt);
 EOF
 
 # initialize redmine
 cat <<EOF > mysql/init/redmine.sql
 CREATE USER $(cat redmine/secrets/db-username.txt) IDENTIFIED BY '$(cat redmine/secrets/db-password)';
 CREATE DATABASE redmine CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
-GRANT ALL ON redmine.* TO ${USERNAME};
+GRANT ALL ON redmine.* TO $(cat redmine/secrets/db-username.txt);
 EOF
 
 find . -type d -name secrets -exec chmod 700 "{}" \;
