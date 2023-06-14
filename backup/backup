@@ -21,18 +21,12 @@ if ! mkdir -p "${DSTDIR}" ; then
 	exit 2
 fi
 
-# Delete the last archive.
-if ! rm -rf "${ARCHDIR}/*.tar.gz" ; then
-	echo "Failed to delete the previous archive." 1>&2
-	exit 1
-fi
-
 # Copy files to the directory that will be archived.
 {
-	echo redmine
 	echo wordpress
+	echo redmine
 } | while read SVC ; do
-	if ! rsync -a "${SRCDIR}/${SVC}" "${DSTDIR}/${SVC}" ; then
+	if ! rsync -a "${SRCDIR}/${SVC}/" "${DSTDIR}/${SVC}" ; then
 		echo "Failed to sync \"${SRCDIR}/${SVC}.\"" 1>&2
 		exit 3
 	fi
@@ -44,11 +38,20 @@ done
 	echo wordpress
 	echo redmine
 } | while read DBNAME ; do
-	mysqldump -h"mysql" -u"root" -p"${DBPASS}" --hex-blob "${DBNAME}" > "${DSTDIR}/${DBNAME}.sql"
+	if ! mysqldump -h"mysql" -u"root" -p"${DBPASS}" --hex-blob "${DBNAME}" > "${DSTDIR}/${DBNAME}.sql" ; then
+		echo "Failed to dump the ${DBNAME} database." 1>&2
+		exit 4
+	fi
 done
 
 # Create an archive file.
 if ! tar -czf "${ARCHDIR}/${TS}.tar.gz" -C "${DSTDIR}" . ; then
-	echo "Failed to archive the target files."
-	exit 4
+	echo "Failed to archive the target files." 1>&2
+	exit 5
+fi
+
+# Delete old archives.
+if ! find "${DSTDIR}" -type f -name "*.tar.gz" -mtime "+30" -exec rm -f "{}" \; ; then
+	echo "Failed to delete old archives." 1>&2
+	exit 6
 fi

@@ -24,14 +24,14 @@ services:
     build: "backup"
     volumes:
     - type: bind
-      source: ./storage/backup/archive
-      target: /var/lib/backup/archive
+      source: ./storage/backup/archives
+      target: /var/lib/backup/archives
     - type: bind
-      source: ./storage/backup/wordpress
-      target: /var/lib/backup/src/wordpress
+      source: ./storage/wordpress/html
+      target: /var/lib/backup/src/wordpress/html
     - type: bind
-      source: ./storage/backup/redmine
-      target: /var/lib/backup/src/redmine
+      source: ./storage/redmine/files
+      target: /var/lib/backup/src/redmine/files
     - type: bind
       source: ./storage/mysql/secrets
       target: /var/lib/secrets/mysql

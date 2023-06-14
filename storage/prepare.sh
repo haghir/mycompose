@@ -3,9 +3,7 @@
 mkdir -p mysql/init
 mkdir -p mysql/data
 mkdir -p mysql/secrets
-mkdir -p backup/archive
-mkdir -p backup/wordpress
-mkdir -p backup/redmine
+mkdir -p backup/archives
 mkdir -p min-auth/secrets
 mkdir -p wordpress/html
 mkdir -p wordpress/secrets
@@ -27,9 +25,14 @@ find . -type d -name secrets | while read DPATH ; do
 	find "${DPATH}" -type f -name "*.txt" -execdir chmod 400 "{}" \;
 done
 
+# alter root
+cat <<EOF > mysql/init/root.sql
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '$(cat mysql/secrets/root-password.txt)';
+EOF
+
 # initialize min-auth
 cat <<EOF > mysql/init/min-auth.sql
-CREATE USER $(cat min-auth/secrets/db-username.txt) IDENTIFIED BY '$(cat min-auth/secrets/db-password.txt)';
+CREATE USER $(cat min-auth/secrets/db-username.txt) IDENTIFIED WITH mysql_native_password BY '$(cat min-auth/secrets/db-password.txt)';
 CREATE DATABASE minauth CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
 GRANT ALL ON minauth.* TO $(cat min-auth/secrets/db-username.txt);
 USE minauth;
@@ -42,14 +45,14 @@ EOF
 
 # initialize wordpress
 cat <<EOF > mysql/init/wordpress.sql
-CREATE USER $(cat wordpress/secrets/db-username.txt) IDENTIFIED BY '$(cat wordpress/secrets/db-password.txt)';
+CREATE USER $(cat wordpress/secrets/db-username.txt) IDENTIFIED WITH mysql_native_password BY '$(cat wordpress/secrets/db-password.txt)';
 CREATE DATABASE wordpress CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
 GRANT ALL ON wordpress.* TO $(cat wordpress/secrets/db-username.txt);
 EOF
 
 # initialize redmine
 cat <<EOF > mysql/init/redmine.sql
-CREATE USER $(cat redmine/secrets/db-username.txt) IDENTIFIED BY '$(cat redmine/secrets/db-password.txt)';
+CREATE USER $(cat redmine/secrets/db-username.txt) IDENTIFIED WITH mysql_native_password BY '$(cat redmine/secrets/db-password.txt)';
 CREATE DATABASE redmine CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
 GRANT ALL ON redmine.* TO $(cat redmine/secrets/db-username.txt);
 EOF
