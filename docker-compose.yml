@@ -2,6 +2,7 @@ version: "3.2"
 services:
   mysql:
     image: "mysql:latest"
+    hostname: mysql
     environment:
       MYSQL_ROOT_PASSWORD_FILE: "/var/lib/secrets/root-password.txt"
     volumes:
@@ -41,6 +42,7 @@ services:
 
   minauth:
     build: "min-auth"
+    hostname: minauth
     environment:
       RUST_LOG: info
       REDIS_URI: "redis://redis/0"
@@ -62,6 +64,7 @@ services:
 
   wordpress:
     image: "wordpress:latest"
+    hostname: wordpress
     environment:
       WORDPRESS_DB_HOST: mysql
       WORDPRESS_DB_USER_FILE: "/var/lib/secrets/db-username.txt"
@@ -80,6 +83,7 @@ services:
 
   redmine:
     image: "redmine:latest"
+    hostname: redmine
     environment:
       REDMINE_DB_MYSQL: mysql
       REDMINE_DB_PORT: 3306
